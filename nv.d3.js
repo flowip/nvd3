@@ -1044,6 +1044,7 @@ nv.utils.optionsFunc = function(args) {
     .scale(scale)
     .orient('bottom')
     .tickFormat(function(d) { return d })
+    .tickFormatTspans(function(d) { return d })
     ;
 
   //============================================================
@@ -1333,7 +1334,7 @@ nv.utils.optionsFunc = function(args) {
   // expose chart's sub-components
   chart.axis = axis;
 
-  d3.rebind(chart, axis, 'orient', 'tickValues', 'tickSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  d3.rebind(chart, axis, 'orient', 'tickValues', 'tickSubdivide', 'tickSize', 'tickPadding', 'tickFormat', 'tickFormatTspans');
   d3.rebind(chart, scale, 'domain', 'range', 'rangeBand', 'rangeBands'); //these are also accessible by chart.scale(), but added common ones directly for ease of use
 
   chart.options = nv.utils.optionsFunc.bind(chart);
@@ -1776,6 +1777,7 @@ nv.models.bullet = function() {
     , width = 380
     , height = 30
     , tickFormat = null
+    , tickFormatTspans = null
     , color = nv.utils.getColor(['#1f77b4'])
     , dispatch = d3.dispatch('elementMouseover', 'elementMouseout')
     ;
@@ -2123,6 +2125,11 @@ nv.models.bullet = function() {
     tickFormat = _;
     return chart;
   };
+  chart.tickFormatTspans = function(_) {
+    if (!arguments.length) return tickFormatTspans;
+    tickFormatTspans = _;
+    return chart;
+  };
 
   chart.color = function(_) {
     if (!arguments.length) return color;
@@ -2159,6 +2166,7 @@ nv.models.bulletChart = function() {
     , width = null
     , height = 55
     , tickFormat = null
+    , tickFormatTspans = null
     , tooltips = true
     , tooltip = function(key, x, y, e, graph) {
         return '<h3>' + x + '</h3>' +
@@ -2455,6 +2463,12 @@ nv.models.bulletChart = function() {
     return chart;
   };
 
+  chart.tickFormatTspans = function(x) {
+    if (!arguments.length) return tickFormatTspans;
+    tickFormatTspans = x;
+    return chart;
+  };
+	  
   chart.tooltips = function(_) {
     if (!arguments.length) return tooltips;
     tooltips = _;
@@ -3638,10 +3652,12 @@ nv.models.discreteBarChart = function() {
     .highlightZero(false)
     .showMaxMin(false)
     .tickFormat(function(d) { return d })
+    .tickFormatTspans(function(d) { return d })
     ;
   yAxis
     .orient((rightAlignYAxis) ? 'right' : 'left')
     .tickFormat(d3.format(',.1f'))
+    .tickFormatTspans(function(d) { return d })
     ;
 
   //============================================================
@@ -8036,10 +8052,12 @@ nv.models.multiBarChart = function() {
     .highlightZero(true)
     .showMaxMin(false)
     .tickFormat(function(d) { return d })
+    .tickFormatTspans(function(d) { return d })
     ;
   yAxis
     .orient((rightAlignYAxis) ? 'right' : 'left')
     .tickFormat(d3.format(',.1f'))
+    .tickFormatTspans(function(d) { return d })
     ;
 
   controls.updateState(false);
@@ -9004,10 +9022,12 @@ nv.models.multiBarHorizontalChart = function() {
     .highlightZero(false)
     .showMaxMin(false)
     .tickFormat(function(d) { return d })
+    .tickFormatTspans(function(d) { return d })
     ;
   yAxis
     .orient('bottom')
     .tickFormat(d3.format(',.1f'))
+    .tickFormatTspans(function(d) { return d })
     ;
 
   controls.updateState(false);
