@@ -5,7 +5,6 @@ var nv = window.nv || {};
 
 nv.version = '1.1.15b';
 nv.dev = false; //set false when in production
-
 window.nv = nv;
 
 nv.tooltip = nv.tooltip || {}; // For the tooltip system
@@ -4982,7 +4981,7 @@ nv.models.indentedTree = function() {
                 nodeTextLength = nv.utils.calcApproxTextWidth(legendText);
               }
 
-              seriesWidths.push(nodeTextLength + 28); // 28 is ~ the width of the circle plus some padding
+              seriesWidths.push(nodeTextLength + 38); // 38 is ~ the width of the circle plus some padding
             });
 
         var seriesPerRow = 0;
@@ -10357,7 +10356,6 @@ nv.models.pie = function() {
 
       var pieLabels = wrap.select('.nv-pieLabels').selectAll('.nv-label')
           .data(pie);
-
       slices.exit().remove();
       pieLabels.exit().remove();
 
@@ -10419,7 +10417,6 @@ nv.models.pie = function() {
           .transition()
             .attr('d', arc)
             .attrTween('d', arcTween);
-
         if (showLabels) {
           // This does the normal label
           var labelsArc = d3.svg.arc().innerRadius(0);
@@ -10427,11 +10424,9 @@ nv.models.pie = function() {
           if (pieLabelsOutside){ labelsArc = arc; }
 
           if (donutLabelsOutside) { labelsArc = d3.svg.arc().outerRadius(arc.outerRadius()); }
-
           pieLabels.enter().append("g").classed("nv-label",true)
             .each(function(d,i) {
                 var group = d3.select(this);
-
                 group
                   .attr('transform', function(d) {
                        if (labelSunbeamLayout) {
@@ -10445,8 +10440,8 @@ nv.models.pie = function() {
                          }
                          return 'translate(' + labelsArc.centroid(d) + ') rotate(' + rotateAngle + ')';
                        } else {
-                         d.outerRadius = radius + 10; // Set Outer Coordinate
-                         d.innerRadius = radius + 15; // Set Inner Coordinate
+                         d.outerRadius = radius; // Set Outer Coordinate
+                         d.innerRadius = radius; // Set Inner Coordinate
                          return 'translate(' + labelsArc.centroid(d) + ')'
                        }
                   });
@@ -10470,6 +10465,8 @@ nv.models.pie = function() {
 
               return Math.floor(coordinates[0]/avgWidth) * avgWidth + ',' + Math.floor(coordinates[1]/avgHeight) * avgHeight;
           };
+          
+          
           pieLabels.transition()
                 .attr('transform', function(d) {
                   if (labelSunbeamLayout) {
@@ -10483,8 +10480,8 @@ nv.models.pie = function() {
                       }
                       return 'translate(' + labelsArc.centroid(d) + ') rotate(' + rotateAngle + ')';
                     } else {
-                      d.outerRadius = radius + 10; // Set Outer Coordinate
-                      d.innerRadius = radius + 15; // Set Inner Coordinate
+                      d.outerRadius = radius; // Set Outer Coordinate
+                      d.innerRadius = radius; // Set Inner Coordinate
 
                       /*
                       Overlapping pie labels are not good. What this attempts to do is, prevent overlapping.
@@ -10500,16 +10497,26 @@ nv.models.pie = function() {
                       return 'translate(' + center + ')'
                     }
                 });
+          
           pieLabels.select(".nv-label text")
-                .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
-                .text(function(d, i) {
+                  .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
+          		  .text(function(d, i) {
+          		  d3.select(this).style('text-anchor', (d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end');
                   var percent = (d.endAngle - d.startAngle) / (2 * Math.PI);
                   var labelTypes = {
                     "key" : getX(d.data),
                     "value": getY(d.data),
-                    "percent": d3.format('%')(percent)
+                    "percent": d3.format('%')(percent),
+                    "percent_precisely": d3.format('.2%')(percent)
                   };
-                  return (d.value && percent > labelThreshold) ? labelTypes[labelType] : '';
+                  var label;
+                  if (labelType == 'key_and_percent_precisely') {
+                	  label = labelTypes['key'] + ': ' + labelTypes['percent_precisely'];
+                  }
+                  else {
+                	  label = labelTypes[labelType];
+                  }
+                  return (d.value && percent > labelThreshold) ? label : '';
                 });
         }
 
