@@ -10459,7 +10459,7 @@ nv.models.pie = function() {
             });
 
           var labelLocationHash = {};
-          var avgHeight = 14;
+          var avgHeight = 9;
           var avgWidth = 140;
           var createHashKey = function(coordinates) {
 
