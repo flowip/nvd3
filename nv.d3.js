@@ -10304,7 +10304,7 @@ nv.models.pie = function() {
     selection.each(function(data) {
       var availableWidth = width - margin.left - margin.right,
           availableHeight = height - margin.top - margin.bottom,
-          radius = Math.min(availableWidth, availableHeight) / 2,
+          radius = (Math.min(availableWidth, availableHeight)) / 2,
           arcRadius = radius-(radius / 5),
           container = d3.select(this);
 
@@ -10424,6 +10424,14 @@ nv.models.pie = function() {
           if (pieLabelsOutside){ labelsArc = arc; }
 
           if (donutLabelsOutside) { labelsArc = d3.svg.arc().outerRadius(arc.outerRadius()); }
+          
+          //For labels overlapping prevention
+          var labelLocations = [];
+          var minHeightDiff = 12;
+          var labelAnchor = function (startAngle, endAngle) {
+        	  return (startAngle + endAngle) / 2 < Math.PI ? 'start' : 'end';
+          }
+          
           pieLabels.enter().append("g").classed("nv-label",true)
             .each(function(d,i) {
                 var group = d3.select(this);
@@ -10442,7 +10450,21 @@ nv.models.pie = function() {
                        } else {
                          d.outerRadius = radius; // Set Outer Coordinate
                          d.innerRadius = radius; // Set Inner Coordinate
-                         return 'translate(' + labelsArc.centroid(d) + ')'
+
+                         var center = labelsArc.centroid(d);
+                         var labelLocationsLength = labelLocations.length;
+                         var currLabelAnchor = labelAnchor(d.startAngle, d.endAngle);
+                         if (labelLocationsLength && currLabelAnchor == 
+                            	 labelAnchor(labelLocations[labelLocationsLength - 1].startAngle, labelLocations[labelLocationsLength - 1].endAngle)) {
+                       	  if (currLabelAnchor == 'start' && center[1] - labelLocations[labelLocationsLength - 1].y < minHeightDiff) {
+                       		  center[1] = labelLocations[labelLocationsLength - 1].y + minHeightDiff;
+                       	  }
+                       	  else if (currLabelAnchor == 'end' && labelLocations[labelLocationsLength - 1].y - center[1] < minHeightDiff) {
+                       		  center[1] = labelLocations[labelLocationsLength - 1].y - minHeightDiff;
+                       	  }
+                         }
+                         labelLocations.push({x:center[0], y:center[1], startAngle:d.startAngle, endAngle:d.endAngle});
+                         return 'translate(' + center + ')'
                        }
                   });
 
@@ -10458,15 +10480,7 @@ nv.models.pie = function() {
 
             });
 
-          var labelLocationHash = {};
-          var avgHeight = 9;
-          var avgWidth = 140;
-          var createHashKey = function(coordinates) {
-
-              return Math.floor(coordinates[0]/avgWidth) * avgWidth + ',' + Math.floor(coordinates[1]/avgHeight) * avgHeight;
-          };
-          
-          
+          labelLocations = [];
           pieLabels.transition()
                 .attr('transform', function(d) {
                   if (labelSunbeamLayout) {
@@ -10483,17 +10497,19 @@ nv.models.pie = function() {
                       d.outerRadius = radius; // Set Outer Coordinate
                       d.innerRadius = radius; // Set Inner Coordinate
 
-                      /*
-                      Overlapping pie labels are not good. What this attempts to do is, prevent overlapping.
-                      Each label location is hashed, and if a hash collision occurs, we assume an overlap.
-                      Adjust the label's y-position to remove the overlap.
-                      */
                       var center = labelsArc.centroid(d);
-                      var hashKey = createHashKey(center);
-                      if (labelLocationHash[hashKey]) {
-                        center[1] -= avgHeight;
+                      var labelLocationsLength = labelLocations.length;
+                      var currLabelAnchor = labelAnchor(d.startAngle, d.endAngle);
+                      if (labelLocationsLength && currLabelAnchor == 
+                         	 labelAnchor(labelLocations[labelLocationsLength - 1].startAngle, labelLocations[labelLocationsLength - 1].endAngle)) {
+                    	  if (currLabelAnchor == 'start' && center[1] - labelLocations[labelLocationsLength - 1].y < minHeightDiff) {
+                    		  center[1] = labelLocations[labelLocationsLength - 1].y + minHeightDiff;
+                    	  }
+                    	  else if (currLabelAnchor == 'end' && labelLocations[labelLocationsLength - 1].y - center[1] < minHeightDiff) {
+                    		  center[1] = labelLocations[labelLocationsLength - 1].y - minHeightDiff;
+                    	  }
                       }
-                      labelLocationHash[createHashKey(center)] = true;
+                      labelLocations.push({x:center[0], y:center[1], startAngle:d.startAngle, endAngle:d.endAngle});
                       return 'translate(' + center + ')'
                     }
                 });
@@ -10501,11 +10517,16 @@ nv.models.pie = function() {
           pieLabels.select(".nv-label text")
                   .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
           		  .text(function(d, i) {
-          		  d3.select(this).style('text-anchor', (d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end');
+          		  d3.select(this)
+          		  .style('text-anchor', labelAnchor(d.startAngle, d.endAngle))
+          		  .style('font-size', '11.5px');
+          		  ;
                   var percent = (d.endAngle - d.startAngle) / (2 * Math.PI);
+                  //var keyMaxLength = 22;
                   var labelTypes = {
+                    //"key" : getX(d.data).length > keyMaxLength ? getX(d.data).substring(0,keyMaxLength-1) + '...' : getX(d.data),
                     "key" : getX(d.data),
-                    "value": getY(d.data),
+                	"value": getY(d.data),
                     "percent": d3.format('%')(percent),
                     "percent_precisely": d3.format('.2%')(percent)
                   };
@@ -10726,7 +10747,7 @@ nv.models.pieChart = function() {
         y = pie.valueFormat()(pie.y()(e.point)),
         content = tooltip(tooltipLabel, y, e, chart);
 
-    nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's', null, offsetElement);
+    nv.tooltip.show([left, top + 70], content, e.value < 0 ? 'n' : 's', null, offsetElement);
   };
 
   //============================================================
