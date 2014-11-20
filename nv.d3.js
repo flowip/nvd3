@@ -10429,7 +10429,7 @@ nv.models.pie = function() {
           var labelLocations = [];
           var minHeightDiff = 12;
           var labelAnchor = function (startAngle, endAngle) {
-        	  return (startAngle + endAngle) / 2 < Math.PI ? 'start' : 'end';
+            return (startAngle + endAngle) / 2 < Math.PI ? 'start' : 'end';
           }
           
           pieLabels.enter().append("g").classed("nv-label",true)
@@ -10452,18 +10452,20 @@ nv.models.pie = function() {
                          d.innerRadius = radius; // Set Inner Coordinate
 
                          var center = labelsArc.centroid(d);
-                         var labelLocationsLength = labelLocations.length;
-                         var currLabelAnchor = labelAnchor(d.startAngle, d.endAngle);
-                         if (labelLocationsLength && currLabelAnchor == 
-                            	 labelAnchor(labelLocations[labelLocationsLength - 1].startAngle, labelLocations[labelLocationsLength - 1].endAngle)) {
-                       	  if (currLabelAnchor == 'start' && center[1] - labelLocations[labelLocationsLength - 1].y < minHeightDiff) {
-                       		  center[1] = labelLocations[labelLocationsLength - 1].y + minHeightDiff;
-                       	  }
-                       	  else if (currLabelAnchor == 'end' && labelLocations[labelLocationsLength - 1].y - center[1] < minHeightDiff) {
-                       		  center[1] = labelLocations[labelLocationsLength - 1].y - minHeightDiff;
-                       	  }
+                         if (d.value) {
+   	                       var labelLocationsLength = labelLocations.length;
+   	                       var currLabelAnchor = labelAnchor(d.startAngle, d.endAngle);
+   	                       if (labelLocationsLength && currLabelAnchor == 
+   	                         labelAnchor(labelLocations[labelLocationsLength - 1].startAngle, labelLocations[labelLocationsLength - 1].endAngle)) {
+   	                         if (currLabelAnchor == 'start' && center[1] - labelLocations[labelLocationsLength - 1].y < minHeightDiff) {
+   	                    	   center[1] = labelLocations[labelLocationsLength - 1].y + minHeightDiff;
+   	                    	 }
+   	                    	 else if (currLabelAnchor == 'end' && labelLocations[labelLocationsLength - 1].y - center[1] < minHeightDiff) {
+   	                           center[1] = labelLocations[labelLocationsLength - 1].y - minHeightDiff;
+   	                         }
+   	                       }
                          }
-                         labelLocations.push({x:center[0], y:center[1], startAngle:d.startAngle, endAngle:d.endAngle});
+   	                     labelLocations.push({x:center[0], y:center[1], startAngle:d.startAngle, endAngle:d.endAngle});
                          return 'translate(' + center + ')'
                        }
                   });
@@ -10496,20 +10498,21 @@ nv.models.pie = function() {
                     } else {
                       d.outerRadius = radius; // Set Outer Coordinate
                       d.innerRadius = radius; // Set Inner Coordinate
-
                       var center = labelsArc.centroid(d);
-                      var labelLocationsLength = labelLocations.length;
-                      var currLabelAnchor = labelAnchor(d.startAngle, d.endAngle);
-                      if (labelLocationsLength && currLabelAnchor == 
-                         	 labelAnchor(labelLocations[labelLocationsLength - 1].startAngle, labelLocations[labelLocationsLength - 1].endAngle)) {
-                    	  if (currLabelAnchor == 'start' && center[1] - labelLocations[labelLocationsLength - 1].y < minHeightDiff) {
-                    		  center[1] = labelLocations[labelLocationsLength - 1].y + minHeightDiff;
-                    	  }
-                    	  else if (currLabelAnchor == 'end' && labelLocations[labelLocationsLength - 1].y - center[1] < minHeightDiff) {
-                    		  center[1] = labelLocations[labelLocationsLength - 1].y - minHeightDiff;
-                    	  }
+                      if (d.value) {
+	                    var labelLocationsLength = labelLocations.length;
+	                    var currLabelAnchor = labelAnchor(d.startAngle, d.endAngle);
+	                    if (labelLocationsLength && currLabelAnchor == 
+	                      labelAnchor(labelLocations[labelLocationsLength - 1].startAngle, labelLocations[labelLocationsLength - 1].endAngle)) {
+	                      if (currLabelAnchor == 'start' && center[1] - labelLocations[labelLocationsLength - 1].y < minHeightDiff) {
+	                        center[1] = labelLocations[labelLocationsLength - 1].y + minHeightDiff;
+	                      }
+	                      else if (currLabelAnchor == 'end' && labelLocations[labelLocationsLength - 1].y - center[1] < minHeightDiff) {
+	                        center[1] = labelLocations[labelLocationsLength - 1].y - minHeightDiff;
+	                      }
+	                    }
                       }
-                      labelLocations.push({x:center[0], y:center[1], startAngle:d.startAngle, endAngle:d.endAngle});
+	                  labelLocations.push({x:center[0], y:center[1], startAngle:d.startAngle, endAngle:d.endAngle});
                       return 'translate(' + center + ')'
                     }
                 });
@@ -10741,13 +10744,14 @@ nv.models.pieChart = function() {
   //------------------------------------------------------------
 
   var showTooltip = function(e, offsetElement) {
+    console.log(e.pos[0] + ' ' + e.pos[1]);
     var tooltipLabel = pie.description()(e.point) || pie.x()(e.point)
     var left = e.pos[0] + ( (offsetElement && offsetElement.offsetLeft) || 0 ),
         top = e.pos[1] + ( (offsetElement && offsetElement.offsetTop) || 0),
         y = pie.valueFormat()(pie.y()(e.point)),
         content = tooltip(tooltipLabel, y, e, chart);
 
-    nv.tooltip.show([left, top + 70], content, e.value < 0 ? 'n' : 's', null, offsetElement);
+    nv.tooltip.show([left, top + 60], content, e.value < 0 ? 'n' : 's', null, offsetElement);
   };
 
   //============================================================
