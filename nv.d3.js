@@ -10744,14 +10744,12 @@ nv.models.pieChart = function() {
   //------------------------------------------------------------
 
   var showTooltip = function(e, offsetElement) {
-    console.log(e.pos[0] + ' ' + e.pos[1]);
     var tooltipLabel = pie.description()(e.point) || pie.x()(e.point)
     var left = e.pos[0] + ( (offsetElement && offsetElement.offsetLeft) || 0 ),
         top = e.pos[1] + ( (offsetElement && offsetElement.offsetTop) || 0),
         y = pie.valueFormat()(pie.y()(e.point)),
         content = tooltip(tooltipLabel, y, e, chart);
-
-    nv.tooltip.show([left, top + 60], content, e.value < 0 ? 'n' : 's', null, offsetElement);
+    nv.tooltip.show([left, top], content, e.value < 0 ? 'n' : 's', null, offsetElement);
   };
 
   //============================================================
@@ -10906,7 +10904,7 @@ nv.models.pieChart = function() {
   //------------------------------------------------------------
 
   pie.dispatch.on('elementMouseover.tooltip', function(e) {
-    e.pos = [e.pos[0] +  margin.left, e.pos[1] + margin.top];
+    e.pos = [e.pos[0] /*+  margin.left*/, e.pos[1] /*+ margin.top*/];
     dispatch.tooltipShow(e);
   });
 
